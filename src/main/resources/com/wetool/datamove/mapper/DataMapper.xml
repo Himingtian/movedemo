@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wetool.datamove.mapper.DataMapper" >
+
+    <insert id="insertData" parameterType="java.util.List">
+        insert into elasticsearch(id,username, password) values
+        <foreach collection="list" item="item" index="index"
+                 separator=",">
+            (#{item.id},#{item.username},#{item.password})
+        </foreach>
+    </insert>
+
+
+</mapper>

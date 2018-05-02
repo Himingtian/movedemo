@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+
+        <!--打开注解扫描(全局)-->
+       <!-- <context:component-scan base-package="com."/>-->
+        <!--引入外部文件-->
+        <context:property-placeholder location="classpath:db.properties" />
+        <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+            <property name="driverClassName" value="${jdbc.driver}" />
+            <property name="jdbcUrl" value="${jdbc.url}" />
+            <property name="username" value="${jdbc.username}" />
+            <property name="password" value="${jdbc.password}" />
+            <property name="maximumPoolSize" value="10" />
+
+        </bean>
+        <!--配置SqlMapSession-->
+        <bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactory">
+            <property name="dataSource" ref="dataSource"></property>
+            <property name="configLocation" value="classpath:mybatis/SqlMapConfig.xml"></property>
+        </bean>
+
+        <!--配置mapper扫描器-->
+        <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+            <property name="basePackage" value="com.wetool.datamove.mapper"></property>
+        </bean>
+        <!--配置事务-->
+        <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager" id="transactionManager">
+            <!--数据源-->
+            <property name="dataSource" ref="dataSource"></property>
+        </bean>
+
+        <!--通知-->
+        <tx:advice id="interceptor" transaction-manager="transactionManager">
+            <tx:attributes>
+                <!-- 传播行为 -->
+                <tx:method name="save*" propagation="REQUIRED"/>
+                <tx:method name="insert*" propagation="REQUIRED"/>
+                <tx:method name="delete*" propagation="REQUIRED"/>
+                <tx:method name="update*" propagation="REQUIRED"/>
+                <tx:method name="find*" propagation="SUPPORTS" read-only="true"/>
+                <tx:method name="get*" propagation="SUPPORTS" read-only="true"/>
+            </tx:attributes>
+
+        </tx:advice>
+        <!--切面-->
+        <aop:config>
+            <aop:advisor advice-ref="interceptor" pointcut="execution(* com.wetool.datamove.service.impl.*.*(..))"/>
+        </aop:config>
+
+</beans>
